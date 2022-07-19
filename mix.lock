@@ -1,0 +1,3 @@
+%{
+  "logger_file_backend": {:hex, :logger_file_backend, "0.0.13", "df07b14970e9ac1f57362985d76e6f24e3e1ab05c248055b7d223976881977c2", [:mix], [], "hexpm", "71a453a7e6e899ae4549fb147b1c6621f4233f8f48f58ca10a64ec67b6c50018"},
+}
