@@ -1,0 +1,109 @@
+diff --git a/lib/application.ex b/lib/application.ex
+index fe3192d..4e4e842 100644
+--- a/lib/application.ex
++++ b/lib/application.ex
+@@ -13,15 +13,15 @@ defmodule Yahtzee.Application do
+       {YahtzeeScore, []},
+       %{
+         id: One,
+-        start: {YahtzeePlayerSupervisor, :start_link, [["one"]]}
++        start: {YahtzeePlayerSupervisor, :start_link, ["one"]}
+       },
+       %{
+         id: Two,
+-        start: {YahtzeePlayerSupervisor, :start_link, [["two"]]}
++        start: {YahtzeePlayerSupervisor, :start_link, ["two"]}
+       },
+       %{
+         id: Three,
+-        start: {YahtzeePlayerSupervisor, :start_link, [["three"]]}
++        start: {YahtzeePlayerSupervisor, :start_link, ["three"]}
+       }
+     ]
+ 
+diff --git a/lib/yahtzee_player.ex b/lib/yahtzee_player.ex
+index f47279e..0451d85 100644
+--- a/lib/yahtzee_player.ex
++++ b/lib/yahtzee_player.ex
+@@ -1,8 +1,10 @@
+ defmodule YahtzeePlayer do
+   use GenServer
++  require Logger
+ 
+   ## API
+   def start_link(name) do
++    Logger.debug("YP 7: Test: #{inspect(name)}")
+     reg_name = player_name(name)
+     scorecard_name = YahtzeeScorecard.scorecard_name(name)
+     GenServer.start_link(__MODULE__, scorecard_name, name: reg_name)
+@@ -21,7 +23,6 @@ defmodule YahtzeePlayer do
+   ## Callbacks
+   @impl true
+   def init(scorecard_name) do
+-    IO.puts(scorecard_name)
+     {:ok, scorecard_name}
+   end
+ 
+diff --git a/lib/yahtzee_player_supervisor.ex b/lib/yahtzee_player_supervisor.ex
+index 94c882c..4c15b58 100644
+--- a/lib/yahtzee_player_supervisor.ex
++++ b/lib/yahtzee_player_supervisor.ex
+@@ -2,15 +2,23 @@ defmodule YahtzeePlayerSupervisor do
+   use Supervisor
+   require Logger
+ 
++  def start_link(name) do
++    Supervisor.start_link(__MODULE__, name)
++  end
++
++  def supervior_name(name) do
++    name = name <> "_sup"
++    String.to_atom(name)
++  end
++
+   @impl true
+   def init(arg) do
+-    Logger.debug("YPS 7: Test: #{inspect(arg)}")
++    Logger.debug("YPS 16: Test: #{inspect(arg)}")
+     children = [
+       {YahtzeePlayer, arg},
+       {YahtzeeScorecard, arg}
+     ]
+ 
+-    opts = [strategy: :one_for_all, name: Yahtzee.Supervisor]
+-    Supervisor.start_link(children, opts)
++    Supervisor.init(children, strategy: :one_for_one)
+   end
+ end
+\ No newline at end of file
+diff --git a/lib/yahtzee_scorecard.ex b/lib/yahtzee_scorecard.ex
+index ba2a3fb..acab467 100644
+--- a/lib/yahtzee_scorecard.ex
++++ b/lib/yahtzee_scorecard.ex
+@@ -1,5 +1,6 @@
+ defmodule YahtzeeScorecard do
+   use GenServer
++  require Logger
+ 
+   defstruct [:ones, :twos, :threes, :fours, :fives, :sixes, :bonus,
+     :one_pair, :two_pairs, :three_of_a_kind, :four_of_a_kind, :low_straight,
+@@ -7,6 +8,7 @@ defmodule YahtzeeScorecard do
+ 
+   ## API
+   def start_link(name) do
++    Logger.debug("YSC 11: Test: #{inspect(name)}")
+     scorecard = %YahtzeeScorecard{}
+     reg_scorecard = scorecard_name(name)
+     GenServer.start_link(__MODULE__, scorecard, name: reg_scorecard)
+diff --git a/mix.exs b/mix.exs
+index 9f5d0d7..c60db48 100644
+--- a/mix.exs
++++ b/mix.exs
+@@ -14,6 +14,7 @@ defmodule Yahtzee.MixProject do
+   # Run "mix help compile.app" to learn about applications.
+   def application do
+     [
++      mod: {Yahtzee.Application, []},
+       extra_applications: [:logger]
+     ]
+   end

@@ -13,15 +13,15 @@ defmodule Yahtzee.Application do
       {YahtzeeScore, []},
       %{
         id: One,
-        start: {YahtzeePlayerSupervisor, :start_link, [["one"]]}
+        start: {YahtzeePlayerSupervisor, :start_link, ["one"]}
       },
       %{
         id: Two,
-        start: {YahtzeePlayerSupervisor, :start_link, [["two"]]}
+        start: {YahtzeePlayerSupervisor, :start_link, ["two"]}
       },
       %{
         id: Three,
-        start: {YahtzeePlayerSupervisor, :start_link, [["three"]]}
+        start: {YahtzeePlayerSupervisor, :start_link, ["three"]}
       }
     ]
 

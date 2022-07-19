@@ -2,15 +2,25 @@ defmodule YahtzeePlayerSupervisor do
   use Supervisor
   require Logger
 
-  @impl true
-  def init(arg) do
-    Logger.debug("YPS 7: Test: #{inspect(arg)}")
-    children = [
-      {YahtzeePlayer, arg},
-      {YahtzeeScorecard, arg}
-    ]
+  ## API
+  def start_link(name) do
+    name_atom = convert_to_atom(name)
+    GenServer.start_link(__MODULE__, name, name: name_atom)
+  end
 
-    opts = [strategy: :one_for_all, name: Yahtzee.Supervisor]
-    Supervisor.start_link(children, opts)
+  def convert_to_atom(str) do
+    String.to_atom(str <> "_sup")
+  end
+
+  ## Callbacks 
+  @impl true
+  def init(name) do
+    Logger.debug("YPS 18: Test: #{inspect(name)}")
+    children = [
+      {YahtzeePlayer, name},
+      {YahtzeeScorecard, name}
+    ]
+    Logger.debug("YPS 23: Test: #{inspect(children)}")
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end
