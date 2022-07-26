@@ -11,6 +11,7 @@ defmodule Yahtzee.Application do
       # Starts a worker by calling: Newapp.Worker.start_link(arg)
       # {Newapp.Worker, arg}
       {YahtzeeScore, []},
+      {YahtzeeTurn, []},
       %{
         id: One,
         start: {YahtzeePlayerSupervisor, :start_link, ["one"]}
