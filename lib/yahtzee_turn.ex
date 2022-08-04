@@ -27,11 +27,15 @@ defmodule YahtzeeTurn do
   end
 
   def update_roll(pid, keep) do
-    GenStateMachine.call(pid, {:roll, keep})
+    GenStateMachine.call(pid, {:roll, keep}) #TODO use __MODULE__ instead of pid
   end
 
-  def update_roll(pid) do
+  def update_roll(pid) do #TODO consider removing and using default parameter [] in the function above.
     GenStateMachine.call(pid, :roll)
+  end
+
+  def end_turn(pid) do
+    GenStateMachine.cast(pid, :end_turn)
   end
 
   def reset(pid) do
@@ -47,7 +51,7 @@ defmodule YahtzeeTurn do
   end
 
   # Callbacks
-  def handle_event({:call, from}, {:roll, keep}, :three_rolls, data) do
+  def handle_event({:call, from}, {:roll, keep}, :three_rolls, data) do #TODO rename data -> dice_kept
     data = data ++ keep
     {:next_state, :two_rolls, data, [{:reply, from, data}]}
   end
@@ -57,8 +61,20 @@ defmodule YahtzeeTurn do
     {:next_state, :one_roll, data, [{:reply, from, data}]}
   end
 
-  def handle_event({:call, from}, :roll, :one_roll, data) do
-    {:next_state, :three_rolls, data, [{:reply, from, []}]}
+  def handle_event({:call, from}, {:roll, _keep}, :one_roll, data) do
+     {:next_state, :no_rolls, data, [{:reply, from, []}]}
+  end
+
+  def handle_event(:cast, :end_turn, :three_rolls, _data) do
+    {:next_state, :no_rolls, []}
+  end
+
+  def handle_event(:cast, :end_turn, :two_rolls, _data) do
+    {:next_state, :no_rolls, []}
+  end
+
+  def handle_event(:cast, :end_turn, :one_roll, _data) do
+    {:next_state, :no_rolls, []}
   end
 
   def handle_event(:cast, :reset, :two_rolls, _data) do
@@ -66,6 +82,10 @@ defmodule YahtzeeTurn do
   end
 
   def handle_event(:cast, :reset, :one_roll, _data) do
+    {:next_state, :three_rolls, []}
+  end
+
+  def handle_event(:cast, :reset, :no_rolls, _data) do
     {:next_state, :three_rolls, []}
   end
 

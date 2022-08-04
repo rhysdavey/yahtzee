@@ -1,9 +1,9 @@
 defmodule YahtzeeScorecard do
   use GenServer
 
-  defstruct [:ones, :twos, :threes, :fours, :fives, :sixes, :bonus,
+  defstruct [:ones, :twos, :threes, :fours, :fives, :sixes,
     :one_pair, :two_pairs, :three_of_a_kind, :four_of_a_kind, :low_straight,
-    :high_straight, :full_house, :chance, :yahtzee, :total]
+    :high_straight, :full_house, :chance, :yahtzee]
 
   ## API
   def start_link(name) do
@@ -17,7 +17,20 @@ defmodule YahtzeeScorecard do
   end
 
   def update_card(card_pid, category, roll) do
+    category = String.trim(category) |> String.to_atom
     GenServer.call(card_pid, {:update, category, roll})
+  end
+
+  def reset_card(card_pid) do
+    GenServer.call(card_pid, {:reset_card})
+  end
+
+  def is_full(card) do
+    GenServer.call(card, {:is_full})
+  end
+
+  def calculate_score(card) do
+    GenServer.call(card, {:calculate_score})
   end
 
   def scorecard_name(name) do
@@ -84,8 +97,42 @@ defmodule YahtzeeScorecard do
   def handle_call({:update, category, roll}, _from, scorecard) do
     roll = YahtzeeTurn.sort(roll)
     new_score = get_score(category, roll)
-    scorecard = %{scorecard | category => new_score}
+    {scorecard, is_nil} = case Map.fetch(scorecard, category) do
+      {:ok, nil} ->
+        scorecard = %{scorecard | category => new_score}
+        {scorecard, true}
+      {:ok, _value} ->
+        {scorecard, false}
+    end
+    {:reply, {scorecard, is_nil}, scorecard}
+  end
+
+  @impl true
+  def handle_call({:reset_card}, _from, _scorecard) do
+    scorecard = %YahtzeeScorecard{}
     {:reply, scorecard, scorecard}
+  end
+
+  @impl true
+  def handle_call({:is_full}, _from, scorecard) do
+    is_full = !(Map.values(scorecard) |> Enum.member?(nil))
+    {:reply, is_full, scorecard}
+  end
+
+  @impl true
+  def handle_call({:calculate_score}, _from, scorecard) do
+    scorecard_as_map = Map.from_struct(scorecard)
+    total = Enum.reduce(scorecard_as_map, 0, fn({_key, value}, acc) -> value + acc end)
+    upper_half_score = Enum.sum([scorecard_as_map[:ones], scorecard_as_map[:twos],
+    scorecard_as_map[:threes], scorecard_as_map[:fours], scorecard_as_map[:fives],
+    scorecard_as_map[:sixes]])
+    total = case total do
+      total when upper_half_score >= 63 ->
+        total + 50
+      total ->
+        total
+    end
+    {:reply, total, scorecard}
   end
 
   defp get_score(:ones, roll), do: upper_half(roll, 1)
