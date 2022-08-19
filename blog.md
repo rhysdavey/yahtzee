@@ -38,9 +38,11 @@ Due to supervisors being syntactically similar to GenServers, the majority of th
 
 ## Finite state machine
 
-After setting up the supervision tree, I still needed to define one more process to handle the functions for running through a single player’s turn. This process was implemented as another child of the head supervisor. As this process needed to handle multiple different states representing different stages of the turn, I constructed it as a finite state machine. In this case I defined four states, representing how many rolls are remaining in the turn: three, two, one, and none. It contains functions handling calls that represent a roll of the dice, which will set the machine to its next state, and functions that will reset it to its initial state for the end of the turn, including if the player decides not to use all their rolls.
+After setting up the supervision tree, I still needed to define one more process to handle the functions for running through a single player’s turn. This process was implemented as another child of the head supervisor. As this process needed to handle multiple different states representing different stages of the turn, I constructed it as a finite state machine using the GenStateMachine module.
 
-Compared to learning how to work with GenServers and Supervisors, this functionality was actually rather simple to pick up; the examples of finite state machines in the official Elixir documentation were easy to understand and contained all the information I needed in order to implement this process.
+In this case I defined four states, representing how many rolls are remaining in the turn: three, two, one, and none. It contains functions handling calls that represent a roll of the dice, which will set the machine to its next state, and functions that will reset it to its initial state for the end of the turn, including if the player decides not to use all their rolls.
+
+Compared to learning how to work with GenServers and Supervisors, this functionality was actually rather simple to pick up; the examples of GenStateMachine in the Elixir documentation were easy to understand and contained all the information I needed in order to implement this process.
 
 ## User interface and recursion
 
@@ -57,3 +59,15 @@ Additionally, I am also planning to learn the basics of Phoenix LiveView in the 
 ## Conclusions
 
 Overall, I would describe my experience with the project as positive, and feel that it served as a good introduction to Elixir. I was able to learn many of the basic features of the language naturally in order to fulfil the requirements of the game, and adjusted my ways of thinking about programming to more better suit working with functional and concurrent programs. As a result, I feel like I have a good understanding of the basics of Elixir, and am more confident about my ability to carry out other work with the language in the future.
+
+## References
+
+[Yatzy implementaion on Github](https://github.com/rhysdavey/yahtzee)
+
+[Yatzy on Wikipedia](https://en.wikipedia.org/wiki/Yatzy)
+
+[GenServer on Elixir docs](https://hexdocs.pm/elixir/1.13/GenServer.html)
+
+[Supervisor on Elixir docs](https://hexdocs.pm/elixir/1.13/Supervisor.html)
+
+[GenStateMachine on Elixir docs](https://hexdocs.pm/gen_state_machine/GenStateMachine.html)
